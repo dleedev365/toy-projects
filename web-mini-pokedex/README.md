@@ -1,6 +1,11 @@
 # Mini Pokedex App
 
 - A simple Pokedex app that allows the user to query pokemons by their names.
+- [WebSite](https://pokedexmini.netlify.app/)
+
+### Peeview
+
+<img src= "./preview.png" width="50%">
 
 ## To run this program locally
 
@@ -63,7 +68,3 @@
 - Card component can be futher broken down into micro components if needed.
 - To increase accessibility, convert text units to "rem".
 - If Radar chart looks skewed, consider removing "weight" property from dataset.
-
-## Demo
-
-- [WebSite](https://pokedexmini.netlify.app/)
