@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    *{
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    body{
+        background-color: rgb(40, 41, 42);
+        color: white;
+    }
+    .container{
+      width: 100%;
+      text-align: center;
+      margin-top: 12%;
+    }
+    
+    #csvSubmitBtn{
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        opacity: 0.5;
+    }
+    #myfileBtn{
+      text-align: center;
+      opacity: 0.5;
+      /* background-color: #008CBA; */
+    }
+
+    #logOutBtn{
+      background-color: #008CBA;
+      border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        opacity: 0.5;
+    }
+    #logOutBtn:hover, #myfileBtn:hover, #csvSubmitBtn:hover{
+      opacity: 1;
+    }
+    #csvSubmitBtn:hover, #logoutBtn:hover, #myfileBtn:hover{
+      cursor: pointer;
+    }
+    
+    input{
+        text-align: center;
+    }
+    .errMsg{
+        color: red;
+        animation: shake 0.5s;
+    }
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+    </style>
+</head>
+<body>
+  <div class = "container">
+    <h1>CSV FIle Uploading Page</h1>
+    <h2>Hello <span style="color:rgb(255, 188, 30);"><%= user %></span> !</h2> 
+    <h3>Please upload your <span style="color:rgb(0, 255, 21);">CSV</span> file for further actions</h3>
+    
+
+    <form method = "post" enctype="multipart/form-data">
+      <input type="file" id="myfileBtn" name="myfile"><br><br>
+      <input type="submit" formaction="/handleFile" value="Submit" id = "csvSubmitBtn" >
+      <input type="submit" formaction="/handleLogout" value="Logout" id ="logOutBtn">
+    </form>
+    <br>
+    <p class="errMsg"><%= typeof msg != 'undefined' ? msg: ''%></p>
+  </div>
+
+</body>
+</html>

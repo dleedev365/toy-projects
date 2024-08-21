@@ -1,0 +1,108 @@
+.card{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border: 2px solid rgb(219, 219, 219);
+    padding: 10%;
+}
+
+.pokedexBtnsContinaer {
+    margin-top: 4%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    /* border: 1px solid red; */
+}
+
+.card Button{
+    margin: 2%;
+    background-color: white;
+    color: black;
+    padding: 2%;
+    width: 100px;
+    background: white;
+    border: 2px solid rgb(199, 199, 199); /* Green */
+    border-radius: 50px 50px 50px 50px;  /*top-left rocer, top-right-corner, bottom-right corner, bottom-left corner*/
+}
+
+.card Button:hover{
+    background-color: rgb(228, 228, 228);
+    color: black;
+}
+
+.card Button:focus{
+    outline:0;
+}
+
+.cardImageContainer{
+    text-align: center;
+    max-width: 80%;
+    height: auto;
+}
+
+.cardSpriteImagesContainer{
+    margin-top: 10%;
+}
+
+.cardSpriteImages{
+    /* background-color: rgb(245, 245, 245); */
+    height: auto;
+}
+
+.cardImageContainer > img{
+    max-width: inherit;
+    /* background-color: rgb(245, 245, 245); */
+    height: auto;
+}
+
+.cardSpriteImages{
+    width: 50%;
+}
+
+.cardTitle{
+    font-size: 2rem;
+}
+
+.cardAbilities{
+    padding: 3% 0% 3% 0%;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+h4{
+    color: rgb(139, 139, 139);
+}
+
+.cardTypes{
+    display: grid;
+    grid-template-columns: auto;
+    column-gap: 4rem;
+    text-align: center;
+    padding-top: 4%;
+    padding-bottom: 4%;
+    width: 100%;
+    height: auto;
+    /* border: 1px solid red; */
+}
+
+
+.cardTypeTags{
+    display: inline-block;
+    /* border: 1px solid orange; */
+    border-radius: 5px;
+    font-size: small;
+    margin: 1%;
+    padding: 1% 4% 1% 4%;
+    text-shadow: 1px 1px 2px black;
+    color: white;
+}
+
+#cardChartContainer{
+    min-height: max-content;
+    /* border: 1px solid red; */
+    padding: 4% 0 4% 0;
+}
+

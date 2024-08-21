@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    *{
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    body{
+        background-color: rgb(40, 41, 42);
+        color: white;
+    }
+
+    .container{
+      width: 100%;
+      text-align: center;
+      margin-top: 12%;
+      justify-content: center;
+    }
+
+    .gridContainer, .dataTableContainer{
+        width: auto;
+        /* border: 1px solid red; */
+        text-align: center;
+    }
+    .dataTableContainer{
+        padding-bottom: 5%;
+    }
+
+    .histogramContainer{
+        margin-top: 1%;
+        margin-bottom: 1%;
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    #histogramTable{
+        margin-left: 5%;
+        text-align: center;
+        width: inherit;
+        padding: 3%;
+    }
+
+    .dataTable{
+        text-align: center;
+        width: 100%;
+    }
+
+    .histogramTD{
+        color:rgb(47, 139, 243);
+    }
+    .histogramTH{
+        color:rgb(110, 200, 57);
+    }
+
+    .dataTable{
+        width: 100%;
+    }
+    .dataTableTD{
+        border-bottom: 1px solid grey;
+    }
+    .dataTableTH{
+        border-bottom: 1px solid yellow;
+        padding-left: 1%;
+        padding-right: 1%;
+    }
+    
+    .slider {
+      -webkit-appearance: none;
+      width: 50%;
+      height: 15px;
+      border-radius: 5px;
+      background: #030e0fa9;
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+    
+    .slider:hover {
+      opacity: 1;
+    }
+    
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: rgb(47, 139, 243);
+      cursor: pointer;
+    }
+    
+    .slider::-moz-range-thumb {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: rgb(47, 139, 243);
+      cursor: pointer;
+    }
+
+
+    #logOutBtn{
+      background-color: #008CBA;
+      border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        opacity: 0.5;
+    }
+
+    #logOutBtn:hover{
+        cursor: pointer;
+        opacity: 1;
+       
+    }
+    #myInput{
+        width: 30%;
+        padding: 0.5%;
+        text-align: center;
+        margin-bottom: 5%;
+        margin-top: 5%;
+    }
+
+</style>
+<body>
+    <div class="container">
+        <h1>SCALE PAGE</h1>
+        
+        <form method = "post" enctype="multipart/form-data">
+            <input type="submit" formaction="/handleLogout" value="logout", id= "logOutBtn">
+        </form>
+        
+        <div class="gridContainer">
+            <div class="histogramContainer">
+                <table id = "histogramTable">
+                    <tbody id = "histogramTableBody">
+                    </tbody>
+                </table>
+            </div>
+                <label for="myRange">Please set a cutoff value on a scale from 1 to 200</label>
+            <br><br>
+            <input type="range" min="1" max="200" value="100" name ="myRnage" class="slider" id="myRange">
+            <p>current value: <span id="demo">100</span></p>
+            <p>student count: <span id="studentCount"></span></p>
+        </div>
+
+        <input type="text" id="myInput" onkeyup="tableSearch()" placeholder="Search for studnetID ..." title="Type in a name">
+
+        <div class="dataTableContainer">
+            <div id = "fdata"><%= data %></div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // Populate table of csv data
+        var fdata = document.getElementById('fdata');
+        var fdatahtml = fdata.innerHTML;
+        var lines = fdatahtml.trim().split('\n');
+        var newDT = []; 
+        var tableData = createCSVTable(newDT, lines); // contains csv file in array 
+        fdata.innerHTML = tableData;
+        var finalCSVdata = [];
+        var is_scaled = true;
+
+
+        
+        // Slider function
+        var slider = document.getElementById("myRange");
+        var output = document.getElementById("demo");
+        
+
+        // BUG: Everything delcared inside here can't be accessed/exported globally
+        slider.oninput = function(){
+            var is_scaled = true;
+            console.log('============== slider oninput start =============');
+            var scaleValue = this.value;
+            output.innerHTML = this.value;
+            if (is_scaled === 100){
+                is_scaled = false;
+            }else{
+                is_scaled = true;
+            }
+            
+            // get the oiriginal csv data
+            var lines = fdatahtml.trim().split('\n');
+            var newDT = []; 
+            var tableData = createCSVTable(newDT, lines); // contains csv file in array 
+
+
+            var studentsFinalGrades = scaleHistogram(newDT, scaleValue);
+            console.log('student final grades check \n', studentsFinalGrades);
+            // finalCSVdata = add_final_total_to_(newDT, studentsFinalGrades);
+            // console.log('AFTER ALL csv data\n', finalCSVdata);
+            var finalCSVdata = add_final_total_to_(newDT, studentsFinalGrades);
+            console.log('AFTER ALL csv data\n', finalCSVdata);
+
+            var newScaledTableData = plotNewCSVDataTable(finalCSVdata, finalCSVdata.length);
+            fdata.innerHTML = newScaledTableData;
+
+            console.log('============== slider oninput end =============');
+        }
+        
+        
+        
+        console.log('============== No slider start =============');
+        studentsFinalGrades = create_histogram_of(newDT, null);
+        console.log('student final grades check \n', studentsFinalGrades);
+        finalCSVdata = add_final_total_to_(newDT, studentsFinalGrades);
+        console.log('AFTER ALL csv data\n', finalCSVdata);
+        var newScaledTableData = plotNewCSVDataTable(finalCSVdata, finalCSVdata.length);
+        fdata.innerHTML = newScaledTableData;
+        console.log('============== No slider end =============');
+
+
+
+
+
+
+        function plotNewCSVDataTable(newDataTable, newDataTable_length){
+            var tableData = "<table class='dataTable'>";
+            var header_legnth = get_num_of_grade_items(newDataTable);
+            for(var row = 0; row < newDataTable_length; row++){
+                tableData += "<tr class='dataTableTR'>";
+                for (var col = 0; col < header_legnth; col++){
+                    if(row === 0 ){
+                        tableData += "<th class='dataTableTH'>" + newDataTable[row][col] + '</th>';
+                    }else{
+                        tableData += "<td class='dataTableTD'>" + newDataTable[row][col] + '</td>';
+                    }
+                }
+                tableData += '</tr>';
+            }
+            tableData += '</table>';
+
+        // console.log(tableData);
+       return tableData;
+        }
+
+
+
+        function scaleHistogram(newDT, scaleValue){
+            var studentScaeldFinalGrades = create_histogram_of(newDT, scaleValue);
+            return studentScaeldFinalGrades;
+        }
+
+
+
+        // Get csv data and map student recrords to their final totals
+        // return a new csv data as a 2d array
+        function add_final_total_to_(csvData, finalTotals){
+            var newCSVdata = csvData;
+            
+            // for each row of csv data, add final grade to coressponding studentID
+            for(records in csvData){
+                // Add new column headers if current row is header
+                if(csvData[records][0] === 'studentID'){
+                    if (!newCSVdata[records].includes('final percentage') || !newCSVdata[records].includes('final percentage')){
+                        newCSVdata[records].push('final percentage'); 
+                        newCSVdata[records].push('final letter grade');
+                    }
+                }else if (csvData[records][0] === 'total'){
+                    if (!newCSVdata[records].includes('-')){
+                        newCSVdata[records].push('-');
+                        newCSVdata[records].push('-');
+                    }
+                }else{
+                    if (!newCSVdata[records].includes((Math.round(finalTotals[studentID]*100)/100).toFixed(2)) || !newCSVdata[records].includes(find_grade_letter_of(finalTotals[studentID]))){
+                        // get the current row studnetID
+                        var studentID = csvData[records][0];
+                        // add final percentage and letter grade
+                        newCSVdata[records].push((Math.round(finalTotals[studentID]*100)/100).toFixed(2)); 
+                        newCSVdata[records].push(find_grade_letter_of(finalTotals[studentID])); 
+                        
+                    }
+                }
+            }
+
+            // console.log('final wrap up\n', newCSVdata);
+
+            return newCSVdata;
+        }
+
+
+
+        // return student records after plotting a histrogram of students' grades
+        function create_histogram_of(data, scaleValue){
+            // console.log(`create_histogram_of / scaleValue = ${scaleValue}`);
+            var studentFinalRecords = {};
+
+            // 1. Get the length of total row = number of grade items
+            var num_grade_items = get_num_of_grade_items(data); 
+            var total_row_index = get_total_row_index(data);
+
+            console.log(`create_histogram_of / num_grade_items = ${num_grade_items} and total_row_index = ${total_row_index}`);
+
+            // 2. For each student row, calculate the total sum
+            var student_totals = calculate_total_sum_of_student(data, total_row_index);
+            console.log('Student initial records\n', student_totals);
+            
+            // if scale value is set, readjust the total sums of students
+            // and display in histogram for each student record with their corresponding grade
+            if (scaleValue !== null && scaleValue !== undefined){
+                console.log(`scale value is set`);
+                studentFinalRecords = assign_grades(student_totals, scaleValue);  
+            }else{
+                console.log(`scale value is not set`);
+                studentFinalRecords = assign_grades(student_totals, null);     
+            }
+
+            console.log(`Student Final Grades\n `, studentFinalRecords);
+            
+            // update student count
+            document.getElementById('studentCount').innerHTML = Object.keys(studentFinalRecords).length;
+
+            return studentFinalRecords;
+        }
+
+
+
+        // return the number of grading items based on the total row length as a parameter
+        function get_num_of_grade_items(data){
+            var total_row_index;
+
+            for (var i =0; i < data.length; i++){
+                // if current row includes studentID, then count the number of grade items
+                if (data[i].includes('studentID')){
+                    total_row_index = i;
+                    break;
+                }
+            }
+            var total_row_length = data[total_row_index].length;
+            return total_row_length;
+        }
+
+
+
+        function get_total_row_index(data){
+            var total_row_index;
+
+            for (var i =0; i < data.length; i++){
+                if (data[i][0] === 'total'){
+                    total_row_index = i;
+                    break;
+                }
+            }
+            return total_row_index;
+        }
+
+
+
+        // Return a dictionary of total sumr per student {studentID: total}
+        function calculate_total_sum_of_student(data, total_row_index){
+            console.log(`calculate_total_sum_of_students / total_row_index = ${total_row_index}`);
+            console.log(`calculate_total_sum_of_students / data\n`, data);
+
+            var studentRecords = {};
+            
+            for (var row = 1; row < data.length; row++){
+                // skip the total row
+                if (data[row] !== data[total_row_index]){
+                    // sum all grades per student
+                    var student_sum = 0;
+                    for (var col= 1; col < data[row].length; col++){
+                        student_sum += parseInt(data[row][col]) * parseInt(data[total_row_index][col]) / 100;
+                    }
+                    // console.log(`StudnetID = ${data[row][0]} has total = ${student_sum}`);
+                    studentRecords[data[row][0]] = student_sum; 
+                }
+            }  
+            return studentRecords;
+        }
+
+
+
+        // Assign corresponding grades to students and display histogram 
+        // if scale value is not set, display default histogram
+        // if scale is set, display scaled histogram
+        // return student final grades {studnetID: final total point};
+        function assign_grades(studentRecords, scaleValue){
+            var tbody = document.getElementById('histogramTableBody');
+            var tbodyTemplate = "<tr class='histogramTR' id ='colAp'><th class='histogramTH'>A+</th></tr>" +
+                                "<tr class='histogramTR' id ='colA'><th class='histogramTH'>A</th></tr>" +
+                                "<tr class='histogramTR' id ='colAm'><th class='histogramTH'>A-</th></tr>" +
+                                "<tr class='histogramTR' id ='colBp'><th class='histogramTH'>B+</th></tr>" +
+                                "<tr class='histogramTR' id ='colB'><th class='histogramTH'>B</th></tr>" +
+                                "<tr class='histogramTR' id ='colBm'><th class='histogramTH'>B-</th></tr>" +
+                                "<tr class='histogramTR' id ='colCp'><th class='histogramTH'>C+</th></tr>" +
+                                "<tr class='histogramTR' id ='colC'><th class='histogramTH'>C</th></tr>" +
+                                "<tr class='histogramTR' id ='colCm'><th class='histogramTH'>C-</th></tr>" +
+                                "<tr class='histogramTR' id ='colD'><th class='histogramTH'>D</th></tr>" +
+                                "<tr class='histogramTR' id ='colF'><th class='histogramTH'>F</th></tr>";
+            
+            tbody.innerHTML += tbodyTemplate;
+
+            console.log(`assing_grades / studentRecrods\n`, studentRecords);
+
+
+            if(scaleValue === null || scaleValue === undefined){
+                var studnetGradeRecords = studentRecords;
+                console.log('No scaling ...');
+            }else{
+                var studnetGradeRecords = scaleStudentTotals(studentRecords, scaleValue);
+                console.log('Applying scaling ... ');
+                // clean up the table body 
+                tbody.innerHTML = '';
+                tbody.innerHTML = tbodyTemplate;
+            }
+
+            console.log(`Student records to grade\n`, studnetGradeRecords);
+            
+
+            for (var record in studnetGradeRecords){
+                var grade = studnetGradeRecords[record];
+                // console.log(typeof grade, ` grade to display: ${grade}`);
+
+                if (grade >= 95){
+                    //tcolAP = tr, table row
+                    var tcolAp = document.getElementById('colAp');
+                    tcolAp.innerHTML += "<td class='histogramTD'>o</td>";
+                   // console.log('assinged grade: A+');
+                }else if(grade >= 90 && grade <= 94.99){
+                    var tcolA = document.getElementById('colA'); 
+                    tcolA.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: A');
+                }else if(grade >= 85 && grade <= 89.99){
+                    var tcolAm = document.getElementById('colAm'); 
+                    tcolAm.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: A-');
+                }else if(grade >= 80 && grade <= 84.99){
+                    var tcolBp = document.getElementById('colBp');  
+                    tcolBp.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: B+');
+                }else if(grade >= 75 && grade <= 79.99){
+                    var tcolB = document.getElementById('colB'); 
+                    tcolB.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: B');
+                }else if(grade >= 70 && grade <= 74.99){
+                    var tcolBm = document.getElementById('colBm');  
+                    tcolBm.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: B-');
+                }else if(grade >= 65 && grade <= 69.99){
+                    var tcolCp = document.getElementById('colCp');  
+                    tcolCp.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: C+');
+                }else if(grade >= 60 && grade <= 64.99){
+                    var tcolC = document.getElementById('colC');   
+                    tcolC.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: C');
+                }else if(grade >= 55 && grade <= 59.99){
+                    var tcolCm = document.getElementById('colCm');  
+                    tcolCm.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade: C-');
+                }else if(grade >= 50 && grade <= 54.99){
+                    var tcolD = document.getElementById('colD');  
+                    tcolD.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade:" D');
+                }else{
+                    var tcolF = document.getElementById('colF');  
+                    tcolF.innerHTML += "<td class='histogramTD'>o</td>";
+                    // console.log('assinged grade:: F');
+                }       
+            }
+        
+        
+            return studnetGradeRecords;
+        }
+
+
+
+        function find_grade_letter_of(score){
+            var gletter;
+
+            if (score >= 95){
+                gletter = 'A+';
+            }else if(score >= 90 && score <= 94.99){
+                gletter = 'A';
+            }else if(score >= 85 && score <= 89.99){
+                gletter = 'A-';
+            }else if(score >= 80 && score <= 84.99){
+                gletter = 'B+';
+            }else if(score >= 75 && score <= 79.99){
+                gletter = 'B';
+            }else if(score >= 70 && score <= 74.99){
+                gletter = 'B-';;
+            }else if(score >= 65 && score <= 69.99){
+                gletter = 'C+';
+            }else if(score >= 60 && score <= 64.99){
+                gletter = 'C';
+            }else if(score >= 55 && score <= 59.99){
+                gletter = 'C-';
+            }else if(score >= 50 && score <= 54.99){
+                gletter = 'D';
+            }else{
+                gletter = 'F';
+            }       
+
+            return gletter;
+        }
+
+
+
+        // Scale student totals by given scale value
+        // return a new student total records {studnetID: total}
+        function scaleStudentTotals(studentRecords, scaleValue){
+            for (var record in studentRecords){
+                studentRecords[record] = studentRecords[record] * scaleValue / 100;
+            }
+            // console.log(`New Student Records: ${studentRecords}`);
+
+            return studentRecords;
+        }
+     
+
+
+        function createCSVTable(newDataTable, lines){
+            var tableData = "<table class='dataTable'>";
+            
+                for(var row = 0; row < lines.length; row++){
+                    tableData += "<tr class='dataTableTR'>";
+                    
+                    // for each string row as elements of the array, parse them
+                    var colData = lines[row].split(',');
+                    newDataTable.push(colData);
+                    // console.log(`column data at ${row}: `, colData);
+                    
+                    for (var col = 0; col < colData.length; col++){
+                        if(row === 0 ){
+                            tableData += "<th class='dataTableTH'>" + colData[col] + '</th>';
+                        }else{
+                            tableData += "<td class='dataTableTD'>" + colData[col] + '</td>';
+                        }
+                    }
+                    tableData += '</tr>';
+                }
+                tableData += '</table>';
+    
+            // console.log(tableData);
+           return tableData;
+        }
+
+
+
+        function tableSearch() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("myInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementsByClassName("dataTable")[0];
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[0];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+                }       
+            }
+            console.log(`done searching ...`);
+            }
+    </script>
+</body>
+</html>
